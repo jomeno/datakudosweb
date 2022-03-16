@@ -74,7 +74,7 @@ function App() {
             <div className="p-5 mb-4 bg-light rounded-3">
               <div className="container-fluid py-5">
                 <h1 className="display-5 fw-bold">{selectedDataset?.name} report</h1>
-                <p className="col-md-8 fs-4">A realtime, live preview as the user is curating their report by picking fields and filters from the related datasets below.</p>
+                <p className="col-md-8 fs-4">Maybe a realtime, live preview as the user is curating their report by picking fields and filters from the related datasets below.</p>
                 <p>The related datasets below have been determined automatically by parsing metadata only, sparing the user the agony of manually creating and maintainig joins for their reports.</p>
                 <button className="btn btn-primary btn-lg" type="button">Download Report</button>
               </div>
