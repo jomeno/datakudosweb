@@ -10,36 +10,94 @@ function App() {
 
   const [datasets, setDatasets] = useState<dataset[]>([])
   const [selectedDataset, setSelectedDataset] = useState<dataset>()
-  //const [selectedFields, setSelectedFields] = useState<field[]>([])
-  const [relatedDatasets, setRelatedDatasets] = useState<dataset[]>()
+  const [relatedDatasets, setRelatedDatasets] = useState<dataset[]>([])
+
+  const getRelatedDatasets =(dataset:dataset)=>{
+    if(!dataset || !dataset.name) return [];
+    console.log('Determining related datasets...')
+    let datasetId = dataset.name + 'Id'
+    // Strip white spaces
+    datasetId = datasetId.replace(/ /g, '')
+    console.log('The relationship is by', datasetId)
+    // Get all datasets with this relationship in their fields
+    let relatedDatasets: dataset[] = []
+    for(let i = 0; i < datasets.length; i++){
+      let fields = datasets[i].fields
+      fields.map(f=>{
+        let fieldLast2Characters = f.name.substring(f.name.length - 2)
+        if(fieldLast2Characters === 'Id') {
+          console.log('Found one or more relationsip fields')
+          console.log('selectedDataset', selectedDataset)
+
+          // Prevent duplicate entries
+          let datasetExist = relatedDatasets.filter(d=>d.name === datasets[i].name)[0]
+          console.log('datasetExist', datasetExist)
+          if(!datasetExist){            
+
+            let relatedDataset = datasets[i]            
+
+            // Prevent adding selected dataset
+            if(dataset.name !== relatedDataset.name){
+
+              relatedDatasets.push(relatedDataset)
+
+            // // If Compensation has MedicalInsuranceId or MedicalInsurance has CompensationId
+            // let datasetCommaFields = dataset.fields.join(',') // Compensation
+            
+            // let relationCommaFields = relatedDataset.fields.join(',') // Medical Insurance
+            // let relatedDatasetId = relatedDataset.name + 'Id'
+            
+            //   if(datasetCommaFields.includes(relatedDatasetId) || relationCommaFields.includes(datasetId)){
+            //     relatedDatasets.push(relatedDataset)
+            //     console.log(dataset.name + ' has ' + relatedDatasetId + ' or ' + relatedDataset.name + ' has ' + datasetId)
+            //   }else{
+            //     console.log(dataset.name + ' does not have ' + relatedDatasetId + ' and ' + relatedDataset.name + ' does not have ' + datasetId)
+            //   }
+            }
+          }            
+        }
+        return f        
+      })
+    }
+    
+    console.log('Related datasets', relatedDatasets)
+    
+    return relatedDatasets
+  }
 
   const handleDownloadClick = ()=>{
-    console.log('User clicked Download.')
-    console.log('Automatically generated SQL query with join...')
-    console.log('SELECT * FROM Employee LEFT JOIN Compensation ON Employee.Id = Compensation.EmployeeId')
+
+    console.log('User clicked Download.')    
+    if(relatedDatasets.length > 0){
+      
+      console.log('Automatically generated SQL query with join...')
+      console.log('SELECT * FROM Employee LEFT JOIN Compensation ON Employee.Id = Compensation.EmployeeId')
+    }else{
+      console.log("But we're not interested in this boring scenario yet. Please select Employee dataset")
+    }   
+    
     //alert('Download in progress...')
   }
 
   const handleFieldClick = (relatedDatasetIndex:number, fieldIndex:number)=>{
 
-    // if(!selectedFields.filter(f=> f.name === field.name)[0]) 
-    //   selectedFields.push(field)
-    // console.log('selectedFields', selectedFields)
-    // setSelectedFields([...selectedFields])
-
     if(relatedDatasets){
+      console.log('User selected Field', relatedDatasets[relatedDatasetIndex].fields[fieldIndex])
       let isSelected = relatedDatasets[relatedDatasetIndex].fields[fieldIndex].isSelected
       relatedDatasets[relatedDatasetIndex].fields[fieldIndex].isSelected = !isSelected
       setRelatedDatasets([...relatedDatasets])
     }
-    
 
   }
 
   const handleSelectDataset = (dataset: dataset)=>{
-    console.log('User selected dataset', dataset)
-    let relatedDatasets = [datasets[0], datasets[1]]
-    setRelatedDatasets(relatedDatasets)
+    console.log('User selected Dataset', dataset)
+
+    // Get related datasets
+    let relatedDatasets = getRelatedDatasets(dataset);
+
+    // Update state
+    setRelatedDatasets([...relatedDatasets])
     setSelectedDataset(dataset)
   }
 
@@ -82,7 +140,7 @@ function App() {
                   return (<Link to="#" onClick={()=>handleSelectDataset(item)} className={selectedDataset?.name === item?.name ? 'list-group-item list-group-item-dark active' : 'list-group-item list-group-item-action'} key={index}>
                     <div className="d-flex w-100 justify-content-between">
                       <h5 className="mb-1">{item.name}</h5>
-                      <small>3 fields</small>
+                      <small className='d-none'>3 fields</small>
                     </div>
                     <p className="mb-1 text-left">{
                       index === 0 ? 'Some user friendly description' : 
@@ -113,7 +171,7 @@ function App() {
             </div>
             </div>
             {
-              relatedDatasets ? 
+              relatedDatasets.length > 0 ? 
                 <>
                   <h5>
                     Related details
@@ -154,7 +212,7 @@ function App() {
                           <div className="mb-3">
                             {
                               relation.fields.map((field, fieldIndex)=>{
-                                if(fieldIndex === 0) return null;
+                                //if(fieldIndex === 0) return null;
                                 return (<Link to="#" onClick={()=> handleFieldClick(relationIndex, fieldIndex)} key={fieldIndex}>
                                   <span className={field.isSelected ? 'badge rounded-pill bg-light text-dark border border-secondary me-1' : 'badge rounded-pill bg-light text-dark me-1'}>
                                     {field.name}
@@ -166,7 +224,7 @@ function App() {
                             {/* <Link to="#"><span className="badge rounded-pill bg-light text-dark me-1">Compensation Plan</span></Link>
                             <Link to="#"><span className="badge rounded-pill bg-light text-dark me-1">Height</span></Link> */}
                           </div>
-                          <p className="card-text"><small className="text-muted">Last updated 3 mins ago</small></p>
+                          <p className="card-text"><small className="text-muted">Last updated {relationIndex === 0 ? '3 mins' : '2 days'} ago</small></p>
                         </div>
                       </div>
                     )
