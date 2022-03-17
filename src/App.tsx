@@ -1,19 +1,26 @@
-import React from 'react'
+//import React from 'react'
 import logo from './logo.svg'
 import './App.css'
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { FieldTag, RelatedDatasetCard } from './Home';
+//import { FieldTag, RelatedDatasetCard } from './Home';
 
 function App() {
 
 
   const [datasets, setDatasets] = useState<dataset[]>([])
   const [selectedDataset, setSelectedDataset] = useState<dataset>()
-  const [selectedFields, setSelectedFields] = useState<field[]>([])
+  //const [selectedFields, setSelectedFields] = useState<field[]>([])
   const [relatedDatasets, setRelatedDatasets] = useState<dataset[]>()
 
-  const handleFieldClick = (field:field, fieldIndex:number)=>{
+  const handleDownloadClick = ()=>{
+    console.log('User clicked Download.')
+    console.log('Automatically generated SQL query with join...')
+    console.log('SELECT * FROM Employee LEFT JOIN Compensation ON Employee.Id = Compensation.EmployeeId')
+    //alert('Download in progress...')
+  }
+
+  const handleFieldClick = (relatedDatasetIndex:number, fieldIndex:number)=>{
 
     // if(!selectedFields.filter(f=> f.name === field.name)[0]) 
     //   selectedFields.push(field)
@@ -21,7 +28,6 @@ function App() {
     // setSelectedFields([...selectedFields])
 
     if(relatedDatasets){
-      let relatedDatasetIndex = 0;
       let isSelected = relatedDatasets[relatedDatasetIndex].fields[fieldIndex].isSelected
       relatedDatasets[relatedDatasetIndex].fields[fieldIndex].isSelected = !isSelected
       setRelatedDatasets([...relatedDatasets])
@@ -102,7 +108,7 @@ function App() {
                 }
                 
                 <p className="d-none">The related datasets below have been determined automatically by parsing metadata only, sparing the user the agony of manually creating and maintainig joins for their reports.</p>
-                {selectedDataset ? <button className="btn btn-primary btn-lg" type="button">Download</button> : <></>}
+                {selectedDataset ? <button className="btn btn-primary btn-lg" onClick={()=> handleDownloadClick()} type="button">Download</button> : <></>}
               </div>
             </div>
             </div>
@@ -149,7 +155,7 @@ function App() {
                             {
                               relation.fields.map((field, fieldIndex)=>{
                                 if(fieldIndex === 0) return null;
-                                return (<Link to="#" onClick={()=> handleFieldClick(field, fieldIndex)} key={fieldIndex}>
+                                return (<Link to="#" onClick={()=> handleFieldClick(relationIndex, fieldIndex)} key={fieldIndex}>
                                   <span className={field.isSelected ? 'badge rounded-pill bg-light text-dark border border-secondary me-1' : 'badge rounded-pill bg-light text-dark me-1'}>
                                     {field.name}
                                   </span></Link>)
