@@ -14,11 +14,11 @@ function App() {
 
   const getRelatedDatasets =(dataset:dataset)=>{
     if(!dataset || !dataset.name) return [];
-    console.log('Determining related datasets...')
+    console.log('Determine related datasets...')
     let datasetId = dataset.name + 'Id'
     // Strip white spaces
     datasetId = datasetId.replace(/ /g, '')
-    console.log('The relationship is by', datasetId)
+    //console.log('The relationship is by', datasetId)
     // Get all datasets with this relationship in their fields
     let relatedDatasets: dataset[] = []
     for(let i = 0; i < datasets.length; i++){
@@ -26,12 +26,10 @@ function App() {
       fields.map(f=>{
         let fieldLast2Characters = f.name.substring(f.name.length - 2)
         if(fieldLast2Characters === 'Id') {
-          console.log('Found one or more relationsip fields')
-          console.log('selectedDataset', selectedDataset)
+          console.log('Found one or more related datasets')
 
           // Prevent duplicate entries
           let datasetExist = relatedDatasets.filter(d=>d.name === datasets[i].name)[0]
-          console.log('datasetExist', datasetExist)
           if(!datasetExist){            
 
             let relatedDataset = datasets[i]            
@@ -39,21 +37,19 @@ function App() {
             // Prevent adding selected dataset
             if(dataset.name !== relatedDataset.name){
 
-              relatedDatasets.push(relatedDataset)
-
-            // // If Compensation has MedicalInsuranceId or MedicalInsurance has CompensationId
-            // let datasetCommaFields = dataset.fields.join(',') // Compensation
-            
-            // let relationCommaFields = relatedDataset.fields.join(',') // Medical Insurance
-            // let relatedDatasetId = relatedDataset.name + 'Id'
-            
-            //   if(datasetCommaFields.includes(relatedDatasetId) || relationCommaFields.includes(datasetId)){
-            //     relatedDatasets.push(relatedDataset)
-            //     console.log(dataset.name + ' has ' + relatedDatasetId + ' or ' + relatedDataset.name + ' has ' + datasetId)
-            //   }else{
-            //     console.log(dataset.name + ' does not have ' + relatedDatasetId + ' and ' + relatedDataset.name + ' does not have ' + datasetId)
-            //   }
-            }
+              // If Compensation has MedicalInsuranceId or MedicalInsurance has CompensationId
+              let datasetCommaFields = dataset.fields.map(f=>f.name).join(',') // Compensation
+              
+              let relationCommaFields = relatedDataset.fields.map(f=>f.name).join(',') // Medical Insurance
+              let relatedDatasetId = relatedDataset.name + 'Id'
+              
+                if(datasetCommaFields.includes(relatedDatasetId) || relationCommaFields.includes(datasetId)){
+                  relatedDatasets.push(relatedDataset)
+                  //console.log(dataset.name + ' has ' + relatedDatasetId + ' or ' + relatedDataset.name + ' has ' + datasetId)
+                }else{
+                  //console.log(dataset.name + ' does not have ' + relatedDatasetId + ' and ' + relatedDataset.name + ' does not have ' + datasetId)
+                }
+              }
           }            
         }
         return f        
@@ -177,7 +173,7 @@ function App() {
                     Related details
                 </h5>
                 <p>
-                  Easily enrich your report by adding related information.
+                  Enrich your report by adding related information easily.
                 </p>
                 </>                
                 :
@@ -212,7 +208,7 @@ function App() {
                           <div className="mb-3">
                             {
                               relation.fields.map((field, fieldIndex)=>{
-                                //if(fieldIndex === 0) return null;
+                                if(fieldIndex === 0) return null;
                                 return (<Link to="#" onClick={()=> handleFieldClick(relationIndex, fieldIndex)} key={fieldIndex}>
                                   <span className={field.isSelected ? 'badge rounded-pill bg-light text-dark border border-secondary me-1' : 'badge rounded-pill bg-light text-dark me-1'}>
                                     {field.name}
