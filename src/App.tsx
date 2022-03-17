@@ -3,22 +3,38 @@ import logo from './logo.svg'
 import './App.css'
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-
-type dataset = {
-  name:string;
-
-}
+import { FieldTag, RelatedDatasetCard } from './Home';
 
 function App() {
 
 
   const [datasets, setDatasets] = useState<dataset[]>([])
   const [selectedDataset, setSelectedDataset] = useState<dataset>()
+  const [selectedFields, setSelectedFields] = useState<field[]>([])
+  const [relatedDatasets, setRelatedDatasets] = useState<dataset[]>()
+
+  const handleFieldClick = (field:field, fieldIndex:number)=>{
+
+    // if(!selectedFields.filter(f=> f.name === field.name)[0]) 
+    //   selectedFields.push(field)
+    // console.log('selectedFields', selectedFields)
+    // setSelectedFields([...selectedFields])
+
+    if(relatedDatasets){
+      let relatedDatasetIndex = 0;
+      let isSelected = relatedDatasets[relatedDatasetIndex].fields[fieldIndex].isSelected
+      relatedDatasets[relatedDatasetIndex].fields[fieldIndex].isSelected = !isSelected
+      setRelatedDatasets([...relatedDatasets])
+    }
+    
+
+  }
 
   const handleSelectDataset = (dataset: dataset)=>{
-    console.log('Selected dataset', dataset)
-    if(!dataset) return;
-    setSelectedDataset(dataset);
+    console.log('User selected dataset', dataset)
+    let relatedDatasets = [datasets[0], datasets[1]]
+    setRelatedDatasets(relatedDatasets)
+    setSelectedDataset(dataset)
   }
 
     useEffect(()=>{
@@ -30,13 +46,16 @@ function App() {
         headers : {'Content-Type' : 'application/json'}
       }).then(resp=>{
         if(resp) return resp.json();        
-      }).then(result=>{
-        console.log('Metadata fetched from API, powered by document db like mongodb.', result)
-        setDatasets(result)
-        if(result && result[0]) setSelectedDataset(result[0])
-      })        
-      
-      //console.log('datasets', datasets)
+      }).then(datasets=>{
+        console.log('Metadata fetched from API, maybe powered by a document db like mongodb.', datasets)
+        setDatasets(datasets)
+        
+        // if(datasets && datasets[0]) {
+        //   for(let i = 0; i < relatedDatasets.length; i++){
+        //     relatedDatasets[i].selectedFieldIndex = 0
+        //   }
+        // }
+      })
 
     }, [])
 
@@ -73,45 +92,80 @@ function App() {
             <div className="mb-5">
             <div className="p-5 mb-4 bg-light rounded-3">
               <div className="container-fluid py-5">
-                <h1 className="display-5 fw-bold">{selectedDataset?.name} report</h1>
-                <p className="col-md-8 fs-4">Maybe a realtime, live preview as the user is curating their report by picking fields and filters from the related datasets below.</p>
-                <p>The related datasets below have been determined automatically by parsing metadata only, sparing the user the agony of manually creating and maintainig joins for their reports.</p>
-                <button className="btn btn-primary btn-lg" type="button">Download Report</button>
+                <h1 className="display-5 fw-bold">{selectedDataset?.name} {!selectedDataset?'Reports':'reports'}</h1>
+                <p className="col-md-8 fs-4">What {selectedDataset?.name} information do you need?</p>
+
+                {
+                  selectedDataset? <p className="fs-4">
+                  How about realtime, live preview as you curate, filter and add details into your report.
+                </p>: <></>
+                }
+                
+                <p className="d-none">The related datasets below have been determined automatically by parsing metadata only, sparing the user the agony of manually creating and maintainig joins for their reports.</p>
+                {selectedDataset ? <button className="btn btn-primary btn-lg" type="button">Download</button> : <></>}
               </div>
             </div>
             </div>
-            <h5>
-              Related details
-            </h5>
-            <p>
-              Enrich your report by adding related information.
-            </p>
+            {
+              relatedDatasets ? 
+                <>
+                  <h5>
+                    Related details
+                </h5>
+                <p>
+                  Easily enrich your report by adding related information.
+                </p>
+                </>                
+                :
+                <></>
+            }
+            
+            
+
+            {
+              // relatedDatasets?.map((relation, index)=>{
+              //   return (
+              //     <RelatedDatasetCard 
+              //       dataset={relation} 
+              //       handleFieldClick={handleFieldClick}
+              //       datasetIndex={index}
+              //       key={index}
+              //       ></RelatedDatasetCard>
+              //   )
+              // })
+            }
+            
             <div className="accordion" id="accordionExample">
               <div className="card-group">
-                
-                <div className="card">
-                  <div className="card-body">
-                    <h5 className="card-title">Compensation</h5>
-                    <p className="card-text">Click to add or remove</p>                    
-                    
-                    <div className="mb-3">
-                      <span className="badge rounded-pill bg-light text-dark border border-secondary me-1">Firstname</span>
-                      <span className="badge rounded-pill bg-light text-dark me-1">Compensation Plan</span>
-                      <span className="badge rounded-pill bg-light text-dark me-1">Height</span>
-                    </div>
-                    <p className="card-text"><small className="text-muted">Last updated 3 mins ago</small></p>
-                  </div>
-                </div>
-                <div className="card">
-                  <div className="card-body">
-                    <h5 className="card-title">Medical Insurance</h5>
-                    <p className="card-text">Maybe some basic instruction here for user guidance.</p>
-                    <p className="card-text"><small className="text-muted">Last updated 1 hr ago</small></p>
-                  </div>
-                </div>
+                {
+                  relatedDatasets?.map((relation, relationIndex)=>{
+                    return(
+                      <div className="card" key={relationIndex}>
+                        <div className="card-body">
+                          <h5 className="card-title">{relation.name}</h5>
+                          <p className="card-text">{relationIndex === 0 ? 'Toggle to add or remove' : 'Maybe some basic user instruction here.'}</p>                    
+                          
+                          <div className="mb-3">
+                            {
+                              relation.fields.map((field, fieldIndex)=>{
+                                if(fieldIndex === 0) return null;
+                                return (<Link to="#" onClick={()=> handleFieldClick(field, fieldIndex)} key={fieldIndex}>
+                                  <span className={field.isSelected ? 'badge rounded-pill bg-light text-dark border border-secondary me-1' : 'badge rounded-pill bg-light text-dark me-1'}>
+                                    {field.name}
+                                  </span></Link>)
 
-
-
+                              })
+                            }
+                            
+                            {/* <Link to="#"><span className="badge rounded-pill bg-light text-dark me-1">Compensation Plan</span></Link>
+                            <Link to="#"><span className="badge rounded-pill bg-light text-dark me-1">Height</span></Link> */}
+                          </div>
+                          <p className="card-text"><small className="text-muted">Last updated 3 mins ago</small></p>
+                        </div>
+                      </div>
+                    )
+                  })
+                }
               </div>
             </div>
             
