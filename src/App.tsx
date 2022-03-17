@@ -11,6 +11,8 @@ function App() {
   const [datasets, setDatasets] = useState<dataset[]>([])
   const [selectedDataset, setSelectedDataset] = useState<dataset>()
   const [relatedDatasets, setRelatedDatasets] = useState<dataset[]>([])
+  const [reportQuery, setReportQuery] = useState<string>()
+  const [downloadRequested, setDownloadRequested] = useState<boolean>(false)
 
   const getRelatedDatasets =(dataset:dataset)=>{
     if(!dataset || !dataset.name) return [];
@@ -61,13 +63,26 @@ function App() {
     return relatedDatasets
   }
 
+  const getResultQuery = (selectedDataset:dataset | undefined) => {
+    if(!selectedDataset) return
+
+    let baseEntity = selectedDataset.name
+
+    let query = 'SELECT * FROM ' + baseEntity + ' E1 LEFT JOIN Compensation ON Employee.Id = Compensation.EmployeeId'
+    
+    console.log('Automatically generated SQL query with join...')
+    console.log(query)
+    setReportQuery(query)
+  }
+
   const handleDownloadClick = ()=>{
 
     console.log('User clicked Download.')    
     if(relatedDatasets.length > 0){
+
+      getResultQuery(selectedDataset)
+      setDownloadRequested(true)
       
-      console.log('Automatically generated SQL query with join...')
-      console.log('SELECT * FROM Employee LEFT JOIN Compensation ON Employee.Id = Compensation.EmployeeId')
     }else{
       console.log("But we're not interested in this boring scenario yet. Please select Employee dataset")
     }   
@@ -95,6 +110,7 @@ function App() {
     // Update state
     setRelatedDatasets([...relatedDatasets])
     setSelectedDataset(dataset)
+    getResultQuery(dataset)
   }
 
     useEffect(()=>{
@@ -147,6 +163,13 @@ function App() {
               }
               
             </div>
+            <div className="mt-5">
+              <div className="h-100 p-5 bg-light rounded-3">
+                <h5>Use case</h5>
+                <p>Compensation and Medical Insurance are both related to Employee by EmployeeId</p>
+                <p>Therefore, as a user, when I choose a dataset above, say Employee for example, I want to see only related datasets in the Related details section.</p>                
+              </div>
+            </div>
           </div>
           <div className="col-md-8 p-4">
             <div className="mb-5">
@@ -163,6 +186,7 @@ function App() {
                 
                 <p className="d-none">The related datasets below have been determined automatically by parsing metadata only, sparing the user the agony of manually creating and maintainig joins for their reports.</p>
                 {selectedDataset ? <button className="btn btn-primary btn-lg" onClick={()=> handleDownloadClick()} type="button">Download</button> : <></>}
+                {downloadRequested && <p className="pt-5"><code className="fs-5">{reportQuery}</code></p>}
               </div>
             </div>
             </div>
