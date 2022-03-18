@@ -85,10 +85,35 @@ function App() {
       let datasetName = relatedDatasets[i].name
       let datasetAlias = 'd' + (i + 1)
 
+      // Determine the join dataset
+      let joinDataset = null
+      let joinFieldName1 = baseDatasetName + 'Id'
+
+      console.log('joinFieldName', joinFieldName1)
+
+      // Determine if joinField is valid
+      let joinField = relatedDatasets[i].fields.filter(f=>f.name === joinFieldName1)[0]
+
+      console.log('joinField', joinField)
+      if(!joinField){
+        joinFieldName1 = relatedDatasets[i].name + 'Id'
+      }else{
+        //if(baseDatasetName === selectedDataset.name) joinFieldName1 = 'Id'
+      }
+
+      console.log('joinFieldName', joinFieldName1)      
+
       // Only add a left join if there is atleast 1 field from the dataset
       let fieldFromDataset = relatedFields.filter(f=>f.datasetIndex === i)[0]
+      console.log('fieldFromDataset', fieldFromDataset)
       if(fieldFromDataset){
-        joinQuery += 'LEFT JOIN ' + datasetName + ' ' + datasetAlias + ' ON d0.Id = ' + datasetAlias + '.' + baseDatasetName + 'Id '
+        let fromDataset = relatedDatasets[fieldFromDataset.datasetIndex]
+        console.log('fromDataset', fromDataset)
+
+        let joinFieldName2 = joinFieldName1
+
+        //if(joinFieldName2 === fromDataset.name + 'Id') joinFieldName2 = 'Id'
+        joinQuery += 'LEFT JOIN ' + datasetName + ' ' + datasetAlias + ' ON d0.' + joinFieldName1 + ' = ' + datasetAlias + '.' + joinFieldName2
       }
     }
 
