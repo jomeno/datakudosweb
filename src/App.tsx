@@ -106,7 +106,7 @@ function App() {
       let fieldFromDataset = relatedFields.filter(f=>f.datasetIndex === i)[0]
       //console.log('fieldFromDataset', fieldFromDataset)
       if(fieldFromDataset){
-        let fromDataset = relatedDatasets[fieldFromDataset.datasetIndex]
+        //let fromDataset = relatedDatasets[fieldFromDataset.datasetIndex]
         //console.log('fromDataset', fromDataset)
 
         let joinFieldName2 = joinFieldName1 + ' '
@@ -123,19 +123,13 @@ function App() {
 
   const handleDownloadClick = ()=>{
 
-    console.log('User clicked Download.')    
-    if(relatedDatasets.length > 0){
+    console.log('User clicked Download.')
+    console.log('Generating SQL query...')
+    let query = getResultQuery(selectedDataset, relatedFields)
 
-      console.log('Generating SQL query...')
-      let query = getResultQuery(selectedDataset, relatedFields)
-
-      console.log(query)
-      setReportQuery(query)
-      setDownloadRequested(true)
-      
-    }else{
-      console.log("But we're not interested in this boring scenario yet. Please select Employee dataset")
-    }   
+    console.log(query)
+    setReportQuery(query)
+    setDownloadRequested(true)  
   }
 
   const handleFieldClick = (relatedDatasetIndex:number, fieldIndex:number)=>{
