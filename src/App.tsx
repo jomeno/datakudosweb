@@ -161,6 +161,7 @@ function App() {
     setRelatedDatasets([...relatedDatasets])
     setSelectedDataset(dataset)
     setReportQuery('')
+    setDownloadRequested(false)
   }
 
     useEffect(()=>{
