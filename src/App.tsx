@@ -86,7 +86,6 @@ function App() {
       let datasetAlias = 'd' + (i + 1)
 
       // Determine the join dataset
-      let joinDataset = null
       let joinFieldName1 = baseDatasetName + 'Id'
 
       console.log('joinFieldName', joinFieldName1)
@@ -110,7 +109,7 @@ function App() {
         let fromDataset = relatedDatasets[fieldFromDataset.datasetIndex]
         console.log('fromDataset', fromDataset)
 
-        let joinFieldName2 = joinFieldName1
+        let joinFieldName2 = joinFieldName1 + ' '
 
         //if(joinFieldName2 === fromDataset.name + 'Id') joinFieldName2 = 'Id'
         joinQuery += 'LEFT JOIN ' + datasetName + ' ' + datasetAlias + ' ON d0.' + joinFieldName1 + ' = ' + datasetAlias + '.' + joinFieldName2
